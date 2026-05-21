@@ -4,42 +4,43 @@
 
 /* ── Custom Cursor ── */
 (function () {
-  const cursor = document.getElementById('cursor');
-  const follower = document.getElementById('cursorFollower');
-  if (!cursor || !follower) return;
+  const dot  = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if (!dot || !ring) return;
 
-  let mx = 0, my = 0, fx = 0, fy = 0;
+  let mx = 0, my = 0, rx = 0, ry = 0;
 
   document.addEventListener('mousemove', e => {
     mx = e.clientX;
     my = e.clientY;
-    cursor.style.left = mx + 'px';
-    cursor.style.top = my + 'px';
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
   });
 
-  function animateFollower() {
-    fx += (mx - fx) * 0.12;
-    fy += (my - fy) * 0.12;
-    follower.style.left = fx + 'px';
-    follower.style.top = fy + 'px';
-    requestAnimationFrame(animateFollower);
+  function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animateRing);
   }
-  animateFollower();
+  animateRing();
 
-  /* Grow cursor on hoverable elements */
-  const hoverables = 'a, button, .project-card, .skill-pill, .extra-card, .stat-card, .contact-item';
+  const hoverables = 'a, button, .project-item, .stag, .extra-card, .stat, .channel-hint';
   document.querySelectorAll(hoverables).forEach(el => {
     el.addEventListener('mouseenter', () => {
-      cursor.style.transform = 'translate(-50%, -50%) scale(2.5)';
-      cursor.style.background = 'var(--amber-bright)';
-      follower.style.opacity = '0.2';
-      follower.style.transform = 'translate(-50%, -50%) scale(1.6)';
+      dot.style.transform  = 'translate(-50%, -50%) scale(2.5)';
+      dot.style.background = 'var(--green)';
+      ring.style.opacity   = '0.9';
+      ring.style.width     = '44px';
+      ring.style.height    = '44px';
     });
     el.addEventListener('mouseleave', () => {
-      cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-      cursor.style.background = 'var(--amber)';
-      follower.style.opacity = '0.5';
-      follower.style.transform = 'translate(-50%, -50%) scale(1)';
+      dot.style.transform  = 'translate(-50%, -50%) scale(1)';
+      dot.style.background = 'var(--green)';
+      ring.style.opacity   = '0.5';
+      ring.style.width     = '28px';
+      ring.style.height    = '28px';
     });
   });
 })();
@@ -48,45 +49,104 @@
 (function () {
   const nav = document.getElementById('nav');
   if (!nav) return;
-  const onScroll = () => {
-    nav.classList.toggle('scrolled', window.scrollY > 60);
-  };
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 60);
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 })();
 
-/* ── Hero Descriptor Ticker ── */
+/* ── Hero Highlight Cycle ── */
 (function () {
-  const items = document.querySelectorAll('.ticker-item');
-  if (!items.length) return;
-  let current = 0;
+  const el = document.getElementById('highlightCycle');
+  if (!el) return;
 
-  function tick() {
-    items[current].classList.remove('active');
-    current = (current + 1) % items.length;
-    items[current].classList.add('active');
+  const phrases = [
+    'language & intelligence',
+    'interpreters & parsers',
+    'AI & genomics',
+    'full-stack & open-source',
+  ];
+
+  let index = 0;
+
+  function cycle() {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(6px)';
+    setTimeout(() => {
+      index = (index + 1) % phrases.length;
+      el.textContent = phrases[index];
+      el.style.transition = 'opacity 0.5s, transform 0.5s';
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, 400);
   }
 
-  setInterval(tick, 2200);
+  el.style.transition = 'opacity 0.5s, transform 0.5s';
+  setInterval(cycle, 2800);
+})();
+
+/* ── Skill Bars Animation ── */
+(function () {
+  const fills = document.querySelectorAll('.skill-fill');
+  if (!fills.length) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animated');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  fills.forEach(fill => observer.observe(fill));
+})();
+
+/* ── Counter Animation for stat numbers ── */
+(function () {
+  const stats = document.querySelectorAll('.stat-n[data-target]');
+  if (!stats.length) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el       = entry.target;
+      const target   = parseFloat(el.getAttribute('data-target'));
+      const decimals = parseInt(el.getAttribute('data-dec') || '0', 10);
+      const duration = 1400;
+      const start    = performance.now();
+
+      function update(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased    = 1 - Math.pow(1 - progress, 3);
+        el.textContent = (target * eased).toFixed(decimals);
+        if (progress < 1) requestAnimationFrame(update);
+        else el.textContent = target.toFixed(decimals);
+      }
+
+      requestAnimationFrame(update);
+      observer.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+
+  stats.forEach(el => observer.observe(el));
 })();
 
 /* ── Scroll Reveal ── */
 (function () {
-  const sections = document.querySelectorAll('.section, .project-card, .extra-card, .stat-card, .about-edu, .hero-stats');
-
-  const observer = new IntersectionObserver(
-    entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+  const targets = document.querySelectorAll(
+    '.section, .project-item, .extra-card, .stat, .about-edu, .hero-badges'
   );
 
-  sections.forEach(el => {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
+
+  targets.forEach(el => {
     el.classList.add('reveal');
     observer.observe(el);
   });
@@ -96,150 +156,162 @@
 (function () {
   function staggerGroup(selector, delay) {
     const cards = document.querySelectorAll(selector);
-    const groupObserver = new IntersectionObserver(
-      entries => {
-        entries.forEach((entry, i) => {
-          if (entry.isIntersecting) {
-            setTimeout(() => {
-              entry.target.classList.add('visible');
-            }, i * delay);
-            groupObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.06 }
-    );
+    if (!cards.length) return;
+
+    const groupObserver = new IntersectionObserver(entries => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * delay);
+          groupObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.06 });
+
     cards.forEach(el => {
       el.classList.add('reveal');
       groupObserver.observe(el);
     });
   }
 
-  staggerGroup('.project-card', 120);
-  staggerGroup('.extra-card', 100);
-  staggerGroup('.stat-card', 80);
-  staggerGroup('.skill-group', 90);
+  staggerGroup('.project-item', 100);
+  staggerGroup('.extra-card', 90);
+  staggerGroup('.stat', 70);
 })();
 
-/* ── Smooth active nav link highlighting ── */
+/* ── Active nav link highlighting ── */
 (function () {
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-link');
 
-  const observer = new IntersectionObserver(
-    entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('id');
-          navLinks.forEach(link => {
-            link.style.color = link.getAttribute('href') === '#' + id
-              ? 'var(--white)'
-              : '';
-          });
-        }
-      });
-    },
-    { rootMargin: '-40% 0px -55% 0px' }
-  );
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navLinks.forEach(link => {
+          link.style.color = link.getAttribute('href') === '#' + id
+            ? 'var(--white)'
+            : '';
+        });
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
 
   sections.forEach(sec => observer.observe(sec));
 })();
 
-/* ── Project card tilt effect ── */
+/* ── Project item subtle tilt ── */
 (function () {
-  const cards = document.querySelectorAll('.project-card');
+  const items = document.querySelectorAll('.project-item');
 
-  cards.forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const rect = card.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      card.style.transform = `perspective(800px) rotateY(${x * 4}deg) rotateX(${-y * 4}deg) translateZ(4px)`;
+  items.forEach(item => {
+    item.addEventListener('mousemove', e => {
+      const rect = item.getBoundingClientRect();
+      const x    = (e.clientX - rect.left) / rect.width  - 0.5;
+      const y    = (e.clientY - rect.top)  / rect.height - 0.5;
+      item.style.transform = `perspective(1200px) rotateY(${x * 2}deg) rotateX(${-y * 1.5}deg)`;
     });
 
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
+    item.addEventListener('mouseleave', () => {
+      item.style.transform = '';
     });
   });
 })();
 
-/* ── Typing effect on hero bio ── */
+/* ── Hero scroll parallax ── */
 (function () {
-  const bio = document.querySelector('.hero-bio');
-  if (!bio) return;
-
-  // Mark hero section visible immediately (no reveal delay for hero)
-  const hero = document.querySelector('.hero');
-  if (hero) hero.classList.add('visible');
-})();
-
-/* ── Parallax on hero grid lines ── */
-(function () {
-  const grid = document.querySelector('.hero-grid-lines');
+  const grid = document.querySelector('.hero-bg-grid');
   if (!grid) return;
 
   window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    if (scrollY < window.innerHeight) {
-      grid.style.transform = `translateY(${scrollY * 0.25}px)`;
+    if (window.scrollY < window.innerHeight) {
+      grid.style.transform = `translateY(${window.scrollY * 0.2}px)`;
     }
   }, { passive: true });
 })();
 
-/* ── Skills pill hover ripple ── */
+/* ── Skill tag ripple on click ── */
 (function () {
-  document.querySelectorAll('.skill-pill').forEach(pill => {
-    pill.addEventListener('click', function (e) {
+  const style = document.createElement('style');
+  style.textContent = `@keyframes ripple-out { to { transform: translate(-50%,-50%) scale(40); opacity: 0; } }`;
+  document.head.appendChild(style);
+
+  document.querySelectorAll('.stag').forEach(tag => {
+    tag.addEventListener('click', function (e) {
       const ripple = document.createElement('span');
       ripple.style.cssText = `
         position:absolute; border-radius:50%;
         width:4px; height:4px;
-        background:var(--amber);
+        background:var(--green);
         pointer-events:none;
         transform:translate(-50%,-50%) scale(0);
         animation:ripple-out 0.5s ease-out forwards;
         left:${e.offsetX}px; top:${e.offsetY}px;
       `;
-      pill.style.position = 'relative';
-      pill.style.overflow = 'hidden';
-      pill.appendChild(ripple);
+      this.style.position = 'relative';
+      this.style.overflow = 'hidden';
+      this.appendChild(ripple);
       setTimeout(() => ripple.remove(), 500);
     });
   });
-
-  const style = document.createElement('style');
-  style.textContent = `@keyframes ripple-out { to { transform: translate(-50%,-50%) scale(40); opacity: 0; } }`;
-  document.head.appendChild(style);
 })();
 
-/* ── Counter animation for stat numbers ── */
+/* ── Contact terminal input handler ── */
 (function () {
-  const stats = document.querySelectorAll('.stat-num');
-  if (!stats.length) return;
+  const input    = document.getElementById('termInput');
+  const response = document.getElementById('ctResponse');
+  if (!input || !response) return;
 
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      const el = entry.target;
-      const target = parseFloat(el.textContent);
-      const isDecimal = el.textContent.includes('.');
-      const decimals = isDecimal ? el.textContent.split('.')[1].length : 0;
-      const duration = 1200;
-      const start = performance.now();
+  const channels = {
+    whatsapp : 'https://wa.me/917506176003',
+    gmail    : 'mailto:mokshishah0501@gmail.com',
+    github   : 'https://github.com/Mokshii46',
+    linkedin : 'https://linkedin.com/in/mokshee46',
+    phone    : 'tel:+917506176003',
+  };
 
-      function update(now) {
-        const progress = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const value = target * eased;
-        el.textContent = isDecimal ? value.toFixed(decimals) : Math.round(value);
-        if (progress < 1) requestAnimationFrame(update);
-        else el.textContent = isDecimal ? target.toFixed(decimals) : target;
-      }
+  const responses = {
+    whatsapp : '→ opening WhatsApp…',
+    gmail    : '→ opening Gmail…',
+    github   : '→ opening GitHub…',
+    linkedin : '→ opening LinkedIn…',
+    phone    : '→ initiating call…',
+  };
 
-      requestAnimationFrame(update);
-      observer.unobserve(el);
+  /* Highlight channel hints from buttons */
+  document.querySelectorAll('.channel-hint').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ch = btn.getAttribute('data-channel');
+      highlightChannel(ch);
+      input.value = ch;
+      input.focus();
     });
-  }, { threshold: 0.5 });
+  });
 
-  stats.forEach(el => observer.observe(el));
+  input.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const val = input.value.trim().toLowerCase();
+    if (!val) return;
+
+    if (channels[val]) {
+      showResponse(responses[val]);
+      highlightChannel(val);
+      setTimeout(() => window.open(channels[val], '_blank'), 600);
+    } else {
+      showResponse(`→ unknown channel "${val}". Try: whatsapp, gmail, github, linkedin, phone`);
+    }
+
+    input.value = '';
+  });
+
+  function highlightChannel(ch) {
+    document.querySelectorAll('.ct-channel').forEach(row => {
+      row.classList.toggle('active', row.getAttribute('data-ch') === ch);
+    });
+  }
+
+  function showResponse(msg) {
+    response.textContent = msg;
+    response.style.display = 'flex';
+    setTimeout(() => { response.style.display = 'none'; }, 3500);
+  }
 })();
