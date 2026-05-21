@@ -58,7 +58,7 @@ body {
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  transition: transform 0.1s ease, background 0.2s;
+  transition: transform 0.15s ease, background 0.2s;
 }
 
 .cursor-follower {
@@ -73,8 +73,6 @@ body {
   transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s;
   opacity: 0.5;
 }
-
-body:hover .cursor { opacity: 1; }
 
 /* =============================================
    UTILITY
@@ -141,13 +139,8 @@ body:hover .cursor { opacity: 1; }
   transition: width 0.3s ease;
 }
 
-.nav-link:hover {
-  color: var(--white);
-}
-
-.nav-link:hover::after {
-  width: 100%;
-}
+.nav-link:hover { color: var(--white); }
+.nav-link:hover::after { width: 100%; }
 
 .nav-status {
   font-family: var(--font-mono);
@@ -259,17 +252,19 @@ body:hover .cursor { opacity: 1; }
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* ── Ticker: fixed-height container, items overlap via absolute ── */
 .hero-descriptor {
   margin-bottom: 1.5rem;
   height: 1.8rem;
   overflow: hidden;
   border-left: 2px solid var(--amber);
   padding-left: 1rem;
+  position: relative;
 }
 
 .descriptor-ticker {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  height: 100%;
 }
 
 .ticker-item {
@@ -280,15 +275,18 @@ body:hover .cursor { opacity: 1; }
   color: var(--white-dim);
   height: 1.8rem;
   line-height: 1.8rem;
-  transition: color 0.3s;
-  opacity: 0;
   position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s;
 }
 
 .ticker-item.active {
   opacity: 1;
   color: var(--amber);
-  position: relative;
+  transform: translateY(0);
 }
 
 .hero-bio {
@@ -369,10 +367,7 @@ body:hover .cursor { opacity: 1; }
 }
 
 .stat-card:last-child { border-bottom: none; }
-
-.stat-card:hover {
-  background: var(--amber-dim);
-}
+.stat-card:hover { background: var(--amber-dim); }
 
 .stat-num {
   display: block;
@@ -426,9 +421,7 @@ body:hover .cursor { opacity: 1; }
   animation: scan 2s linear infinite;
 }
 
-@keyframes scan {
-  to { left: 100%; }
-}
+@keyframes scan { to { left: 100%; } }
 
 /* =============================================
    SECTIONS
@@ -484,15 +477,8 @@ body:hover .cursor { opacity: 1; }
   margin-bottom: 1.5rem;
 }
 
-.about-text strong {
-  color: var(--white);
-  font-weight: 600;
-}
-
-.about-text em {
-  color: var(--amber);
-  font-style: normal;
-}
+.about-text strong { color: var(--white); font-weight: 600; }
+.about-text em { color: var(--amber); font-style: normal; }
 
 .about-edu {
   margin-top: 3rem;
@@ -546,13 +532,11 @@ body:hover .cursor { opacity: 1; }
   padding: 3rem;
   position: relative;
   overflow: hidden;
-  transition: background 0.3s;
+  transition: background 0.3s, transform 0.25s ease;
   cursor: none;
 }
 
-.project-card:hover {
-  background: var(--black-3);
-}
+.project-card:hover { background: var(--black-3); }
 
 .project-card.featured {
   grid-column: span 2;
@@ -563,9 +547,7 @@ body:hover .cursor { opacity: 1; }
   gap: 0 3rem;
 }
 
-.project-card.featured .project-header {
-  grid-column: 1;
-}
+.project-card.featured .project-header { grid-column: 1; }
 .project-card.featured .project-title {
   grid-column: 1;
   font-size: clamp(2rem, 4vw, 3.5rem);
@@ -575,16 +557,9 @@ body:hover .cursor { opacity: 1; }
   grid-row: 2 / 4;
   align-self: start;
 }
-.project-card.featured .project-highlights {
-  grid-column: 1;
-}
-.project-card.featured .project-links {
-  grid-column: 1;
-}
-.project-card.featured .project-bg-text {
-  font-size: 20rem;
-  opacity: 0.015;
-}
+.project-card.featured .project-highlights { grid-column: 1; }
+.project-card.featured .project-links { grid-column: 1; }
+.project-card.featured .project-bg-text { font-size: 20rem; opacity: 0.015; }
 
 .project-header {
   display: flex;
@@ -636,10 +611,7 @@ body:hover .cursor { opacity: 1; }
   margin-bottom: 1.2rem;
 }
 
-.project-title .amp {
-  color: var(--amber);
-  font-style: italic;
-}
+.project-title .amp { color: var(--amber); font-style: italic; }
 
 .project-desc {
   font-size: 0.92rem;
@@ -663,9 +635,7 @@ body:hover .cursor { opacity: 1; }
   transition: color 0.2s;
 }
 
-.project-card:hover .highlight {
-  color: var(--white);
-}
+.project-card:hover .highlight { color: var(--white); }
 
 .project-link {
   font-family: var(--font-mono);
@@ -678,9 +648,7 @@ body:hover .cursor { opacity: 1; }
   transition: border-color 0.2s;
 }
 
-.project-link:hover {
-  border-color: var(--amber);
-}
+.project-link:hover { border-color: var(--amber); }
 
 .project-bg-text {
   position: absolute;
@@ -696,9 +664,7 @@ body:hover .cursor { opacity: 1; }
   transition: opacity 0.3s;
 }
 
-.project-card:hover .project-bg-text {
-  opacity: 0.04;
-}
+.project-card:hover .project-bg-text { opacity: 0.04; }
 
 /* =============================================
    SKILLS
@@ -749,9 +715,7 @@ body:hover .cursor { opacity: 1; }
   background: var(--amber-dim);
 }
 
-.skill-pill.hot {
-  color: var(--amber);
-}
+.skill-pill.hot { color: var(--amber); }
 
 /* Marquee */
 .marquee-wrap {
@@ -800,10 +764,7 @@ body:hover .cursor { opacity: 1; }
   padding: 0.8rem 1.5rem;
 }
 
-.marquee-track .sep {
-  color: var(--amber);
-  padding: 0.8rem 0;
-}
+.marquee-track .sep { color: var(--amber); padding: 0.8rem 0; }
 
 @keyframes marquee {
   from { transform: translateX(0); }
@@ -814,9 +775,7 @@ body:hover .cursor { opacity: 1; }
    EXTRACURRICULAR
    ============================================= */
 
-.extra {
-  border-top: 1px solid var(--border);
-}
+.extra { border-top: 1px solid var(--border); }
 
 .extra-grid {
   display: grid;
@@ -834,13 +793,9 @@ body:hover .cursor { opacity: 1; }
   transition: background 0.2s;
 }
 
-.extra-card:hover {
-  background: var(--black-3);
-}
+.extra-card:hover { background: var(--black-3); }
 
-.extra-icon {
-  font-size: 1.8rem;
-}
+.extra-icon { font-size: 1.8rem; }
 
 .extra-role {
   font-family: var(--font-display);
@@ -891,9 +846,7 @@ body:hover .cursor { opacity: 1; }
   letter-spacing: 0.01em;
 }
 
-.contact-headline .italic-serif {
-  font-size: clamp(2.5rem, 6vw, 6rem);
-}
+.contact-headline .italic-serif { font-size: clamp(2.5rem, 6vw, 6rem); }
 
 .contact-sub {
   font-size: 1rem;
@@ -909,6 +862,7 @@ body:hover .cursor { opacity: 1; }
   border: 1px solid var(--border);
 }
 
+/* Fixed: removed invalid "group: true" */
 .contact-item {
   display: flex;
   align-items: center;
@@ -918,15 +872,10 @@ body:hover .cursor { opacity: 1; }
   text-decoration: none;
   color: var(--white);
   transition: background 0.2s, border-color 0.2s;
-  group: true;
 }
 
 .contact-item:last-child { border-bottom: none; }
-
-.contact-item:hover {
-  background: var(--amber-dim);
-  border-color: var(--amber);
-}
+.contact-item:hover { background: var(--amber-dim); }
 
 .contact-label {
   font-size: 0.65rem;
@@ -943,9 +892,7 @@ body:hover .cursor { opacity: 1; }
   transition: color 0.2s;
 }
 
-.contact-item:hover .contact-val {
-  color: var(--white);
-}
+.contact-item:hover .contact-val { color: var(--white); }
 
 .contact-arrow {
   font-size: 1rem;
@@ -983,7 +930,8 @@ body:hover .cursor { opacity: 1; }
 .reveal {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal.visible {
@@ -1008,12 +956,12 @@ body:hover .cursor { opacity: 1; }
   }
   .stat-card { border-bottom: none; border-right: 1px solid var(--border); }
   .stat-card:last-child { border-right: none; }
-  
+
   .about-grid { grid-template-columns: 1fr; gap: 2rem; }
   .about-left .section-title { position: static; }
-  
+
   .skills-container { grid-template-columns: 1fr 1fr; }
-  
+
   .project-card.featured {
     grid-column: span 2;
     grid-template-columns: 1fr;
@@ -1027,21 +975,21 @@ body:hover .cursor { opacity: 1; }
 @media (max-width: 768px) {
   .nav { padding: 1.2rem 1.5rem; }
   .nav-links { display: none; }
-  
+
   .hero { padding: 7rem 1.5rem 4rem; }
   .section { padding: 5rem 1.5rem; }
-  
+
   .projects-grid { grid-template-columns: 1fr; }
   .project-card.featured { grid-column: span 1; }
-  
+
   .skills-container { grid-template-columns: 1fr 1fr; gap: 2rem; }
-  
+
   .extra-grid { grid-template-columns: 1fr; }
-  
+
   .contact-inner { grid-template-columns: 1fr; gap: 3rem; }
-  
+
   .footer { flex-direction: column; gap: 0.5rem; text-align: center; }
-  
+
   .cursor, .cursor-follower { display: none; }
   body { cursor: auto; }
 }
